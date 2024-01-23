@@ -1,2 +1,73 @@
 # command-line-password-generator
 a command-line password generator in Python that generates random passwords based on user-defined criteria, such as length and character types (letters, numbers, symbols). Allow users to specify password length and character set preferences.
+
+
+import random
+import string
+import argparse
+
+try:
+    import pyperclip  # For clipboard integration (install using: pip install pyperclip)
+    PYPERCLIP_INSTALLED = True
+except ImportError:
+    PYPERCLIP_INSTALLED = False
+
+def generate_password(length, use_letters, use_numbers, use_symbols):
+    characters = ""
+    if use_letters:
+        characters += string.ascii_letters
+    if use_numbers:
+        characters += string.digits
+    if use_symbols:
+        characters += string.punctuation
+
+    if not characters:
+        print("Error: Please select at least one character type.")
+        return None
+
+    password = ''.join(random.choice(characters) for _ in range(length))
+    return password
+
+def validate_input_length(length):
+    if length < 1:
+        print("Error: Password length must be at least 1.")
+        return False
+    return True
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate a random password.")
+    parser.add_argument("length", type=int, help="Length of the password")
+    parser.add_argument(
+        "--letters", action="store_true", help="Include letters in the password"
+    )
+    parser.add_argument(
+        "--numbers", action="store_true", help="Include numbers in the password"
+    )
+    parser.add_argument(
+        "--symbols", action="store_true", help="Include symbols in the password"
+    )
+
+    args = parser.parse_args()
+
+    if not validate_input_length(args.length):
+        return
+
+    password = generate_password(
+        args.length, args.letters, args.numbers, args.symbols
+    )
+
+    if password:
+        print("Generated Password:", password)
+
+        # Clipboard Integration
+        if PYPERCLIP_INSTALLED:
+            try:
+                pyperclip.copy(password)
+                print("Password copied to clipboard.")
+            except pyperclip.PyperclipException as e:
+                print("Clipboard integration failed:", e)
+        else:
+            print("Warning: pyperclip module not installed. Clipboard integration disabled.")
+
+if __name__ == "__main__":
+    main()
